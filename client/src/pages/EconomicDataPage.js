@@ -1,106 +1,188 @@
 import React, { useState } from "react";
-import { Container, Typography, TextField, MenuItem, Button, Box, Card, CardContent } from "@mui/material";
+import { Container, Typography, TextField, MenuItem, Button, Box, Card, CardContent, Grid, Avatar } from "@mui/material";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { jsPDF } from "jspdf";
 
-const vegetablePrices = {
-  "Lechuga": 10,
-  "Tomate": 15,
-  "Zanahoria": 12,
-  "Albahaca": 20
-};
+// Import images
+import WalmartImage from "../assets/WalmartCenter.jpeg";
+import SuperImage from "../assets/Elsuper.jpeg";
+import McdonaldsImage from "../assets/Mcdonalds.jpeg";
 
-const expertPrices = {
-  "Básico": 500,
-  "Intermedio": 1000,
-  "Avanzado": 2000
+// Define greenhouse costs by type and location
+const greenhouseCosts = {
+  "Walmart": {
+    area: 18420,
+    perimeter: 685,
+    polycarbonate: { min: 54, max: 162 },
+    glass: { min: 100, max: 250 },
+    hydroponic: { min: 150, max: 400 },
+    image: WalmartImage
+  },
+  "Super": {
+    area: 4000,
+    perimeter: 270,
+    polycarbonate: { min: 54, max: 162 },
+    glass: { min: 100, max: 250 },
+    hydroponic: { min: 150, max: 400 },
+    image: SuperImage
+  },
+  "McDonald's": {
+    area: 328,
+    perimeter: 82,
+    polycarbonate: { min: 54, max: 162 },
+    glass: { min: 100, max: 250 },
+    hydroponic: { min: 150, max: 400 },
+    image: McdonaldsImage
+  }
 };
 
 const EconomicDataPage = () => {
-  const [vegetal, setVegetal] = useState("");
-  const [metros, setMetros] = useState("");
-  const [experto, setExperto] = useState("");
-  const [comparaciones, setComparaciones] = useState([]);
+  const [location, setLocation] = useState("");
+  const [greenhouseType, setGreenhouseType] = useState("");
+  const [comparisons, setComparisons] = useState([]);
 
-  const calcularCostos = () => {
-    if (!vegetal || !metros || !experto) {
-      alert("Por favor completa todos los campos.");
+  const calculateCosts = () => {
+    if (!location || !greenhouseType) {
+      alert("Please complete all fields.");
       return;
     }
 
-    const costoVegetal = vegetablePrices[vegetal] * metros;
-    const costoExpertos = expertPrices[experto];
-    const costoTotal = costoVegetal + costoExpertos;
-    const gananciaPotencial = costoVegetal * 2.5;
-    const retorno = ((gananciaPotencial / costoTotal) * 100).toFixed(2);
+    const { area, polycarbonate, glass, hydroponic } = greenhouseCosts[location];
+    let minCost, maxCost;
 
-    const nuevaComparacion = {
-      vegetal,
-      metros,
-      experto,
-      costoTotal,
-      gananciaPotencial,
-      retorno
+    switch (greenhouseType) {
+      case "Polycarbonate":
+        minCost = area * polycarbonate.min;
+        maxCost = area * polycarbonate.max;
+        break;
+      case "Glass":
+        minCost = area * glass.min;
+        maxCost = area * glass.max;
+        break;
+      case "Hydroponic":
+        minCost = area * hydroponic.min;
+        maxCost = area * hydroponic.max;
+        break;
+      default:
+        minCost = 0;
+        maxCost = 0;
+    }
+
+    const newComparison = {
+      location,
+      greenhouseType,
+      minCost,
+      maxCost
     };
 
-    setComparaciones([...comparaciones, nuevaComparacion]);
+    setComparisons([...comparisons, newComparison]);
   };
 
-  const generarPDF = () => {
+  const generatePDF = () => {
     const doc = new jsPDF();
-    doc.text("Reporte de Simulación de Costos", 10, 10);
-    comparaciones.forEach((item, index) => {
-      doc.text(`Configuración ${index + 1}:`, 10, 20 + index * 20);
-      doc.text(`Vegetal: ${item.vegetal}`, 10, 30 + index * 20);
-      doc.text(`Metros cuadrados: ${item.metros}`, 10, 40 + index * 20);
-      doc.text(`Experto: ${item.experto}`, 10, 50 + index * 20);
-      doc.text(`Costo Total: $${item.costoTotal}`, 10, 60 + index * 20);
-      doc.text(`Ganancia Potencial: $${item.gananciaPotencial}`, 10, 70 + index * 20);
-      doc.text(`Retorno de inversión: ${item.retorno}%`, 10, 80 + index * 20);
+
+    // PDF Title
+    doc.setFontSize(18);
+    doc.setTextColor(33, 150, 243); // Blue
+    doc.text("Cost Simulation Report", 10, 20);
+
+    // Add selected location image
+    if (location) {
+      const img = new Image();
+      img.src = greenhouseCosts[location].image;
+      doc.addImage(img, "JPEG", 10, 30, 150, 150);
+    }
+
+    // PDF Content
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // Black
+    let yOffset = 160;
+
+    comparisons.forEach((item, index) => {
+      doc.text(`Configuration ${index + 1}:`, 10, yOffset);
+      doc.text(`Location: ${item.location}`, 10, yOffset + 10);
+      doc.text(`Greenhouse Type: ${item.greenhouseType}`, 10, yOffset + 20);
+      doc.text(`Minimum Cost: $${item.minCost.toLocaleString()}`, 10, yOffset + 30);
+      doc.text(`Maximum Cost: $${item.maxCost.toLocaleString()}`, 10, yOffset + 40);
+      yOffset += 60;
     });
-    doc.save("Simulacion_Costos.pdf");
+
+    // Save the PDF
+    doc.save("Cost_Simulation.pdf");
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
+    <Container maxWidth="md" sx={{ mt: 4, color: "white" }}>
       <Typography variant="h4" gutterBottom>
-        Simulador de Costos para Huertos en Terrazas
+        Rooftop Greenhouse Cost Simulator
       </Typography>
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <TextField select label="Selecciona el vegetal" value={vegetal} onChange={(e) => setVegetal(e.target.value)}>
-          {Object.keys(vegetablePrices).map((veg) => (
-            <MenuItem key={veg} value={veg}>{veg}</MenuItem>
-          ))}
-        </TextField>
+      {/* White Background Container */}
+      <Box sx={{ backgroundColor: "white", padding: 3, borderRadius: 2, color: "black" }}>
+        <Grid container spacing={4}>
+          <Grid item xs={6}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <TextField 
+                select 
+                label="Select Location" 
+                value={location} 
+                onChange={(e) => setLocation(e.target.value)}
+                sx={{ "& .MuiInputBase-root": { color: "black" }, "& .MuiInputLabel-root": { color: "black" } }}
+              >
+                {Object.keys(greenhouseCosts).map((loc) => (
+                  <MenuItem key={loc} value={loc} sx={{ color: "black" }}>{loc}</MenuItem>
+                ))}
+              </TextField>
 
-        <TextField type="number" label="Metros cuadrados a instalar" value={metros} onChange={(e) => setMetros(e.target.value)} />
+              <TextField 
+                select 
+                label="Greenhouse Type" 
+                value={greenhouseType} 
+                onChange={(e) => setGreenhouseType(e.target.value)}
+                sx={{ "& .MuiInputBase-root": { color: "black" }, "& .MuiInputLabel-root": { color: "black" } }}
+              >
+                <MenuItem value="Polycarbonate" sx={{ color: "black" }}>Polycarbonate</MenuItem>
+                <MenuItem value="Glass" sx={{ color: "black" }}>Glass</MenuItem>
+                <MenuItem value="Hydroponic" sx={{ color: "black" }}>Hydroponic</MenuItem>
+              </TextField>
 
-        <TextField select label="Nivel de asesoramiento" value={experto} onChange={(e) => setExperto(e.target.value)}>
-          {Object.keys(expertPrices).map((level) => (
-            <MenuItem key={level} value={level}>{level}</MenuItem>
-          ))}
-        </TextField>
+              <Button variant="contained" color="primary" onClick={calculateCosts}>
+                Calculate Costs
+              </Button>
+            </Box>
+          </Grid>
 
-        <Button variant="contained" color="primary" onClick={calcularCostos}>
-          Calcular Costos
-        </Button>
+          <Grid item xs={6}>
+            {location && (
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ color: "black" }}>{location}</Typography>
+                  <Avatar 
+                    src={greenhouseCosts[location].image}
+                    alt={location} 
+                    sx={{ width: 400, height: 400, margin: 'auto', borderRadius: 0 }}
+                  />
+                </CardContent>
+              </Card>
+            )}
+          </Grid>
+        </Grid>
       </Box>
 
-      {comparaciones.length > 0 && (
+      {comparisons.length > 0 && (
         <>
-          <Typography variant="h6" sx={{ mt: 3 }}>Comparación de Configuraciones:</Typography>
+          <Typography variant="h6" sx={{ mt: 3, color: "white" }}>Configuration Comparison:</Typography>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={comparaciones}>
-              <XAxis dataKey="vegetal" />
-              <YAxis />
+            <BarChart data={comparisons}>
+              <XAxis dataKey="location" stroke="white" />
+              <YAxis stroke="white" />
               <Tooltip />
-              <Bar dataKey="costoTotal" fill="#8884d8" name="Costo Total" />
-              <Bar dataKey="gananciaPotencial" fill="#82ca9d" name="Ganancia Potencial" />
+              <Bar dataKey="minCost" fill="#8884d8" name="Minimum Cost" />
+              <Bar dataKey="maxCost" fill="#82ca9d" name="Maximum Cost" />
             </BarChart>
           </ResponsiveContainer>
-          <Button variant="contained" color="secondary" sx={{ mt: 2 }} onClick={generarPDF}>
-            Descargar Reporte en PDF
+          <Button variant="contained" color="secondary" sx={{ mt: 2 }} onClick={generatePDF}>
+            Download Report as PDF
           </Button>
         </>
       )}

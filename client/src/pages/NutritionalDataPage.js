@@ -134,10 +134,38 @@ const NutritionalDataPage = () => {
         datasets: [{
             label: translations[language].viabilityLabel,
             data: cropData.map(crop => crop.value),
-            backgroundColor: 'rgba(75, 192, 192, 0.6)'
+            backgroundColor: 'rgb(255, 255, 255)'
         }]
     };
-
+    
+    // Opciones personalizadas para el gráfico
+    const chartOptions = {
+        scales: {
+            x: {
+                ticks: {
+                    color: 'white', // Color del texto en el eje X
+                },
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.1)', // Color de la cuadrícula del eje X
+                },
+            },
+            y: {
+                ticks: {
+                    color: 'white', // Color del texto en el eje Y
+                },
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.1)', // Color de la cuadrícula del eje Y
+                },
+            },
+        },
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'white', // Color del texto en la leyenda
+                },
+            },
+        },
+    };
     return (
         <Container>
             <Typography variant="h3" gutterBottom>
@@ -166,7 +194,8 @@ const NutritionalDataPage = () => {
             </Grid>
 
             <Typography variant="h5" style={{ marginTop: 20 }}>{translations[language].viabilityLabel}</Typography>
-            <Bar data={chartData} />
+            <Bar data={chartData} options={chartOptions} />
+
             
             {/* Modal de Información Nutricional */}
             <Dialog open={Boolean(selectedCrop)} onClose={() => setSelectedCrop(null)} sx={{ '& .MuiPaper-root': { borderRadius: '16px' } }}>

@@ -28,7 +28,7 @@ export default function Navbar() {
             <Button sx={{ color: "#F5F5F5", '&:hover': { color: "#64B5F6" } }} onClick={() => navigate("/satellite-data")}>Satellite Data</Button>
             <Button sx={{ color: "#F5F5F5", '&:hover': { color: "#64B5F6" } }} onClick={() => navigate("/nutritional-data")}>Nutritional Data</Button>
             <Button sx={{ color: "#F5F5F5", '&:hover': { color: "#64B5F6" } }} onClick={() => navigate("/economic-data")}>Economic Data</Button>
-            <Button sx={{ color: "#F5F5F5", '&:hover': { color: "#64B5F6" } }} onClick={() => navigate("/other")}>Other</Button>
+            <Button sx={{ color: "#F5F5F5", '&:hover': { color: "#64B5F6" } }} onClick={() => navigate("/cultural-background")}>Cultural Background</Button> {/* Botón actualizado */}
           </Toolbar>
         </Container>
       </AppBar>
